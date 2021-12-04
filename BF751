@@ -1,0 +1,104 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 27 13:55:15 2021
+
+@author: Minty_Lin
+"""
+import numpy as np
+import matplotlib.pyplot as plt
+
+class BAC_equation(object):
+    def __init__(self, alpha=310, weight=75, Km=4, Vmax=30, ABV=0.4, Valc=250,Vgi=225):
+        #the defination of parameter alpha, weight, Km, Vmax, ABV(decimal), Vgi(ml)
+        self.alpha=alpha
+        self.weight=weight #kg
+        self.Km=Km #mM
+        self.Vmax=Vmax
+        self.ABV=ABV
+        self.Vgi=Vgi
+        self.Valc=Valc
+    def BAC_list(self, st_t=0, end_t=60):
+        BAC=np.empty(end_t-st_t+1)
+        if self.Vgi==None:
+            raise ValueError('The volume of alcohol is needed!')
+        Lb=0.075*self.weight
+        p= (self.alpha * self.ABV * self.Valc)/((self.Vgi+self.Valc)*Lb)
+        for t in range(st_t,end_t):
+            p2=np.exp(-self.Vmax*t/(Lb*self.Km))-np.exp(-self.alpha*t/(self.Vgi+self.Valc))
+            #print(np.exp(-self.alpha*t/self.Vgi))
+            BAC[t]=-p*p2
+        return BAC
+
+
+def draw_3():
+    time=np.arange(0,120,20)
+    fig, axs = plt.subplots(1, 2,figsize=(10,7))
+    test=BAC_equation(Valc=250)
+    BAC=test.BAC_list()
+    axs[0].plot(time,BAC[0:6])
+    axs[0].set_title('Drinking 250ml vodka: Estimated BAC vs Time')
+    axs[0].set_xlabel('time')
+    axs[0].set_ylabel('Blood alchol concentration')
+    axs[0].axhline(2,c='r',ls='--')
+    print(BAC)
+    ######################################
+    test=BAC_equation(ABV=0.06,Valc=800)
+    BAC=test.BAC_list()
+    axs[1].plot(time,BAC[0:6])
+    axs[1].set_title('Drinking 800ml Beer: Estimated BAC vs Time')
+    axs[1].set_xlabel('time')
+    axs[1].set_ylabel('Blood alchol concentration')
+    axs[1].set_ylim(0,3)
+    axs[1].axhline(2,c='r',ls='--')
+    print(BAC)
+    
+def draw_4():
+    volume=np.arange(250, 3000, 50)
+    peak_BAC=[]
+    for i in volume:
+        test=BAC_equation(ABV=0.06,Valc=i)
+        BAC=test.BAC_list()
+        peak_BAC.append(max(BAC))
+    print(peak_BAC)
+    fig, ax = plt.subplots()
+    ax.plot(volume,peak_BAC)
+    ax.set_title('The peak of BAC vs The amount of drinking Beer')
+    ax.set_xlabel('The amount of drinking Beer (ml)')
+    ax.set_ylabel('The highest Blood alchol concentration')
+    ax.axhline(2,c='r',ls='--')
+    
+def draw_5():
+    volume=np.arange(50, 300, 25)
+    peak_BAC=[]
+    for i in volume:
+        test=BAC_equation(ABV=0.4,Valc=i)
+        BAC=test.BAC_list()
+        peak_BAC.append(max(BAC))
+    print(peak_BAC)
+    print(volume[6])
+    fig, ax = plt.subplots()
+    ax.plot(volume,peak_BAC)
+    ax.set_title('The peak of BAC vs The amount of drinking whisky')
+    ax.set_xlabel('The amount of drinking whisky (ml)')
+    ax.set_ylabel('The highest Blood alchol concentration')
+    ax.axhline(2,c='r',ls='--')
+
+
+def draw_6():
+    volume=np.arange(250, 3000, 50)
+    peak_BAC=[]
+    for i in volume:
+        test=BAC_equation(ABV=0.06,Valc=i,Km=0.6, Vmax=40)
+        BAC=test.BAC_list()
+        peak_BAC.append(max(BAC))
+    print(peak_BAC)
+    fig, ax = plt.subplots()
+    ax.plot(volume,peak_BAC)
+    ax.set_title('The peak of BAC vs The amount of drinking Beer')
+    ax.set_xlabel('The amount of drinking Beer (ml)')
+    ax.set_ylabel('The highest Blood alchol concentration')
+    ax.axhline(2,c='r',ls='--')
+
+
+#draw_3()
+draw_6()
